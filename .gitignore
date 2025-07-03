@@ -1,0 +1,12 @@
+
+# Folders to ignore
+
+Data/*
+Results/*
+
+# R Files
+
+.RData
+.Rhistory
+.Rproj.user
+COVID_LTLA_Rt_Paper.Rproj

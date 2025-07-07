@@ -238,6 +238,10 @@ png(filename = "Results/Figure1.png",
     height = 10, width = 8, res = 1200, units = "in")
 fig_1
 dev.off()
+pdf(file = "Results/Figure1.pdf",
+    height = 10, width = 8)
+fig_1
+dev.off()
 
 
 #### Figure 2 ####
@@ -266,6 +270,10 @@ fig_2 <- ggplot(data = estimates,
 
 png(filename = "Results/Figure2.png",
     height = 5, width = 8, res = 1200, units = "in")
+fig_2
+dev.off()
+pdf(file = "Results/Figure2.pdf",
+    height = 5, width = 8)
 fig_2
 dev.off()
 
@@ -308,6 +316,10 @@ fig_3 <- ggplot(data = estimates_sum) +
 
 png(filename = "Results/Figure3.png",
     height = 8, width = 12, res = 1200, units = "in")
+fig_3
+dev.off()
+pdf(file = "Results/Figure3.pdf",
+    height = 8, width = 12)
 fig_3
 dev.off()
 
@@ -364,6 +376,10 @@ png(filename = "Results/Figure4.png",
     height = 4, width = 6, res = 1200, units = "in")
 fig_4
 dev.off()
+pdf(file = "Results/Figure4.pdf",
+    height = 4, width = 6)
+fig_4
+dev.off()
 
 
 #### Figure 5 ####
@@ -396,6 +412,10 @@ fig_5 <- ggplot(data = estimates,
 
 png(filename = "Results/Figure5.png",
     height = 5, width = 8, res = 1200, units = "in")
+fig_5
+dev.off()
+pdf(file = "Results/Figure5.pdf",
+    height = 5, width = 8)
 fig_5
 dev.off()
 

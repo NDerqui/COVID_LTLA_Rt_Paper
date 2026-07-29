@@ -684,3 +684,17 @@ list_result
 model_name <- "Main_Model"
 
 saveRDS(list_result, paste0("Results/Final_for_paper_LOCAL_", model_name, ".Rds"))
+
+
+#### Checks
+
+png("Results/FigureS3.png", width = 10, height = 5, units = "in", res = 1200)
+
+traceplot(fit, pars = "VaxEffect", inc_warmup = TRUE) +
+  rcartocolor::scale_color_carto_d("Safe") +
+  ggplot2::theme_bw() +
+  ggplot2::theme(legend.position = "bottom",
+                 legend.title = ggplot2::element_blank()) +
+  ggplot2::guides(colour = ggplot2::guide_legend(nrow = 1))
+
+dev.off()

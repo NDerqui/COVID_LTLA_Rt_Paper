@@ -156,6 +156,11 @@ mean(estimates$Rt_NoVax[estimates$date < as.Date("15/07/2021", format = "%d/%m/%
 1 - mean(estimates$Rt[estimates$date < as.Date("30/04/2021", format = "%d/%m/%Y")])/mean(estimates$Rt_NoVax[estimates$date < as.Date("30/04/2021", format = "%d/%m/%Y")])
 1 - mean(estimates$Rt[estimates$date < as.Date("15/07/2021", format = "%d/%m/%Y")])/mean(estimates$Rt_NoVax[estimates$date < as.Date("15/07/2021", format = "%d/%m/%Y")])
 
+# Same concept to check Rt validity
+
+mean(estimates$Rt)
+mean(estimates$Rt_data)
+
 
 
 # PLOTS -------------------------------------------------------------------

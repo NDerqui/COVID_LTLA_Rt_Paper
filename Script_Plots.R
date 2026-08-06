@@ -177,7 +177,7 @@ fig_1a <- ggplot(data = estimates,
                        fill = carto_pal(name = "Safe")[10], alpha = 0.2) +
           scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
           theme_bw() +
-          labs(y = "Observed Reproduction Number (Rt)") +
+          labs(y = "Inferred Reproduction Number (Rt)") +
           theme(axis.title.x = element_blank(), axis.title.y = element_text(size = rel(1.1)),
                 axis.text.x = element_text(size = rel(1.1), angle = 10), axis.text.y = element_text(size = rel(1.05)),
                 legend.text = element_text(size = rel(1.1)))
@@ -260,10 +260,10 @@ fig_2 <- ggplot(data = estimates,
   geom_boxplot(mapping = aes(y = Rt, color = "RtLogP", fill = "RtLogP"), alpha = 0.2) +
   scale_color_manual(breaks = c("RtLogP", "RtData"),
                      values = c(carto_pal(name = "Safe")[4], carto_pal(name = "Safe")[10]),
-                     labels = c("Model-Predicted Rt", "Observed Rt"), name = "Rt") +
+                     labels = c("Model-Predicted Rt", "Inferred Rt"), name = "Rt") +
   scale_fill_manual(breaks = c("RtLogP", "RtData"),
                     values = c(carto_pal(name = "Safe")[4], carto_pal(name = "Safe")[10]),
-                    labels = c("Model-Predicted Rt", "Observed Rt"), name = "Rt") +
+                    labels = c("Model-Predicted Rt", "Inferred Rt"), name = "Rt") +
   scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
   scale_y_continuous(limits = c(0.0, 3)) +
   theme_bw() +
@@ -301,13 +301,13 @@ fig_3 <- ggplot(data = estimates_sum) +
                     values = c(carto_pal(name = "Safe")[7], carto_pal(name = "Safe")[4],
                                carto_pal(name = "Safe")[10]),
                     labels = c("Rt in the absence of vaccination",
-                               "Model-Predicted Rt", "Observed Rt"),
+                               "Model-Predicted Rt", "Inferred Rt"),
                     name = "Type") +
   scale_color_manual(breaks = c("WithVarAd", "RtLogP", "RtData"),
                      values = c(carto_pal(name = "Safe")[7], carto_pal(name = "Safe")[4],
                               carto_pal(name = "Safe")[10]),
                      labels = c("Rt in the absence of vaccination",
-                                "Model-Predicted Rt", "Observed Rt"),
+                                "Model-Predicted Rt", "Inferred Rt"),
                      name = "Type") +
   scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
   scale_y_continuous(limits = c(0.0, 3)) +
@@ -398,11 +398,11 @@ fig_5 <- ggplot(data = estimates,
   geom_line(mapping = aes(y = Rt_data, color = "Rt_data", alpha = "One")) +
   scale_color_manual(breaks = c("Rt_data", "WithVarAd"),
                      values = c(carto_pal(name = "Safe")[10], carto_pal(name = "Safe")[7]),
-                     labels = c("Observed Rt in each LTLA", "Fitted Rt in the absence of vaccination in each LTLA"),
+                     labels = c("Inferred Rt in each LTLA", "Fitted Rt in the absence of vaccination in each LTLA"),
                      name = "Type") +
   scale_alpha_manual(breaks = c("One", "Two"),
                      values = c(0.2, 0.3),
-                     labels = c("Observed Rt in each LTLA", "Fitted Rt in the absence of vaccination in each LTLA"),
+                     labels = c("Inferred Rt in each LTLA", "Fitted Rt in the absence of vaccination in each LTLA"),
                      name = "Type") +
   scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") +
   scale_y_continuous(limits = c(0.0, 2.7)) +
@@ -433,7 +433,7 @@ fig_s1a <- ggplot(data = estimates) +
   geom_point(mapping = aes(x = Rt_data, y = Rt)) +
   geom_abline(x = 0, y = 1, color = carto_pal(name = "Safe")[9]) +
   theme_bw() +
-  labs(x = "Observed Reproduction Number (Rt)",
+  labs(x = "Inferred Reproduction Number (Rt)",
        y = "Model-Predicted Reproduction Number (Rt)") 
 
 png(filename = "Results/FigureS1.png",
@@ -470,13 +470,13 @@ for (cut in 1:length(cut_offs)) {
                       values = c(carto_pal(name = "Safe")[7], carto_pal(name = "Safe")[4],
                                  carto_pal(name = "Safe")[10]),
                       labels = c("Rt in the absence of vaccination",
-                                 "Model-Predicted Rt", "Observed Rt"),
+                                 "Model-Predicted Rt", "Inferred Rt"),
                       name = "Type") +
     scale_color_manual(breaks = c("WithVarAd", "RtLogP", "RtData"),
                        values = c(carto_pal(name = "Safe")[7], carto_pal(name = "Safe")[4],
                                   carto_pal(name = "Safe")[10]),
                        labels = c("Rt in the absence of vaccination",
-                                  "Model-Predicted Rt", "Observed Rt"),
+                                  "Model-Predicted Rt", "Inferred Rt"),
                        name = "Type") +
     scale_x_date(date_breaks = "2 month", date_labels =  "%b %Y") +
     scale_y_continuous(limits = c(0.0, 3)) +

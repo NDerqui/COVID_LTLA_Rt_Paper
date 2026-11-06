@@ -112,6 +112,7 @@ rm(l_agemin, l_code, l_code2, l_name, l_date, l_date_2, l_date3)
 
 Date_Start <- as.Date("01/01/2021", format = "%d/%m/%Y")
 Date_End <- as.Date("31/12/2021", format = "%d/%m/%Y")
+Vax_Lag_Days <- 14 # Immunological lag (in days)
 
 # Covariates
 
@@ -125,7 +126,7 @@ covar_vax <- c("First_Prop", "Second_Prop", "Third_Prop")
 
 get_data <- function(data_vax, data_rt, data_var,
                      covar_var, covar_vax,
-                     Date_Start, Date_End,
+                     Date_Start, Date_End, Vax_Lag_Days = 0,
                      DoVariants, DoVaxVariants, DoAge, DoVaxAge) {
   
   # Substract data
@@ -147,6 +148,7 @@ get_data <- function(data_vax, data_rt, data_var,
   # Dates of interest
   
   dvax <- rename(dvax, date = vaccination_date)
+  dvax$date <- dvax$date + Vax_Lag_Days        # Apply lag BEFORE filtering
   dvax <- filter(dvax, date >= Date_Start)
   dvax <- filter(dvax, date <= Date_End)
   
@@ -157,6 +159,7 @@ get_data <- function(data_vax, data_rt, data_var,
   dvar <- filter(dvar, date <= Date_End)
   
   dage <- rename(dage, date = vaccination_date)
+  dage$date <- dage$date + Vax_Lag_Days        # Apply lag BEFORE filtering
   dage <- filter(dage, date >= Date_Start)
   dage <- filter(dage, date <= Date_End)
   
@@ -552,6 +555,7 @@ get_data <- function(data_vax, data_rt, data_var,
 data_stan <- get_data(data_vax = data_vax, data_rt = data_rt, data_var = data_var,
                       covar_var = covar_var, covar_vax = covar_vax,
                       Date_Start = Date_Start, Date_End = Date_End,
+                      Vax_Lag_Days = Vax_Lag_Days,
                       DoVariants = 1, DoVaxVariants = 0, DoAge = 0, DoVaxAge = 0)
 
 
@@ -625,7 +629,7 @@ VE_data <- round(data.frame(VE, VE_Quan), digits = 4)
 
 # Var Advantage
 
-if (data_stan[[5]] == 1) {
+if (data_stan[[1]] == 1) {
   
   VarAdvantage <- colMeans(model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))])
   
@@ -668,9 +672,9 @@ Scaling_data <- round(data.frame(Scaling, Scaling_Quan), digits = 4)
 
 ## Return object
 
-list_result <- list(loo = loo_cv,
+list_result <- list(loo = NA,
                     VaccineEffect = VE_data,
-                    if(data_stan[[5]] == 1) {VarAdvantage = VarAdvantage_data} else {VarAdvantage = NA},
+                    if(data_stan[[1]] == 1) {VarAdvantage = VarAdvantage_data} else {VarAdvantage = NA},
                     Rt_Predictions = Rt_data,
                     RegionalRends = RegionalTrends_data,
                     NationalTrend = NationalTrend_data,
@@ -686,15 +690,30 @@ model_name <- "Main_Model"
 saveRDS(list_result, paste0("Results/Final_for_paper_LOCAL_", model_name, ".Rds"))
 
 
-#### Checks
+#### Checks ####
 
-png("Results/FigureS3.png", width = 10, height = 5, units = "in", res = 1200)
+# Tracepolots for the Stan estimates
 
-traceplot(fit, pars = "VaxEffect", inc_warmup = TRUE) +
-  rcartocolor::scale_color_carto_d("Safe") +
-  ggplot2::theme_bw() +
-  ggplot2::theme(legend.position = "bottom",
-                 legend.title = ggplot2::element_blank()) +
-  ggplot2::guides(colour = ggplot2::guide_legend(nrow = 1))
+pars_list <- c("VaxEffect", "VarAdvantage", "LogPredictions", "RegionalTrends", "NationalTrend", "RegionalScale")
+notes_list <- c(".1", ".2", ".3", ".4", ".5", ".6")
+width_list <- c(10, 10, 20, 20, 20, 20)
+height_list <- c(6, 6, 12, 12, 12, 12)
 
-dev.off()
+for (var in 1:length(pars_list)) {
+  
+  p <- traceplot(fit, pars = pars_list[var], inc_warmup = TRUE) +
+    rcartocolor::scale_color_carto_d("Safe") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.position = "bottom",
+                   legend.title = ggplot2::element_blank()) +
+    ggplot2::guides(colour = ggplot2::guide_legend(nrow = 1))
+  
+  png(paste0("Results/FigureS3", notes_list[var], ".png"),
+      width = width_list[var], height = height_list[var],
+      units = "in", res = 1200)
+  print(p)
+  dev.off()
+}
+
+rm(p, var,
+   pars_list, notes_list, width_list, height_list)

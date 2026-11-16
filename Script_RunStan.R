@@ -114,6 +114,9 @@ Date_Start <- as.Date("01/01/2021", format = "%d/%m/%Y")
 Date_End <- as.Date("31/12/2021", format = "%d/%m/%Y")
 Vax_Lag_Days <- 14 # Immunological lag (in days)
 
+# Waning parameter
+Waning_HalfLife_Weeks <- 20 # 20-week half-life (~5 months)
+
 # Covariates
 
 covar_var <- c("Var_PreAlpha", "Var_Alpha", "Var_Delta")
@@ -126,7 +129,8 @@ covar_vax <- c("First_Prop", "Second_Prop", "Third_Prop")
 
 get_data <- function(data_vax, data_rt, data_var,
                      covar_var, covar_vax,
-                     Date_Start, Date_End, Vax_Lag_Days = 0,
+                     Date_Start, Date_End,
+                     Vax_Lag_Days = 0, Waning_HalfLife = NULL,
                      DoVariants, DoVaxVariants, DoAge, DoVaxAge) {
   
   # Substract data
@@ -300,6 +304,80 @@ get_data <- function(data_vax, data_rt, data_var,
                            "First_Prop", "Second_Prop", "Third_Prop",
                            "Var_PreAlpha", "Var_Alpha", "Var_Delta")
   data_model_age <- arrange(data_model_age, group, ltla_name, week)
+  
+  # Apply Waning (if Waning_HalfLife is provided)
+  if (!is.null(Waning_HalfLife) && Waning_HalfLife > 0) {
+    Waning_Weekly_Scaling_Factor <- exp(-log(2) / Waning_HalfLife)
+    unique_ltlas <- unique(data_model$ltla_name)
+    
+    for (ltla in unique_ltlas) {
+      idx <- which(data_model$ltla_name == ltla)
+      T_weeks <- length(idx)
+      
+      p1 <- data_model$First_Prop[idx]
+      p2 <- data_model$Second_Prop[idx]
+      p3 <- data_model$Third_Prop[idx]
+      
+      # Weekly incident uptake (bounded at 0) - NOT CUMULATIVE
+      j1 <- pmax(0, c(p1[1], diff(p1)))
+      j2 <- pmax(0, c(p2[1], diff(p2)))
+      j3 <- pmax(0, c(p3[1], diff(p3)))
+      
+      W1 <- numeric(T_weeks)
+      W2 <- numeric(T_weeks)
+      W3 <- numeric(T_weeks)
+      
+      dose1_queue <- numeric(T_weeks)
+      dose2_queue <- numeric(T_weeks)
+      
+      for (t in 1:T_weeks) 
+      {
+        decay_weights <- Waning_Weekly_Scaling_Factor^(t - (1:t))
+        
+        # Dose 3 (Booster) decay
+        if (t == 1) {
+          W3[t] <- j3[t]
+        } else {
+          W3[t] <- W3[t - 1] * Waning_Weekly_Scaling_Factor + j3[t]
+        }
+        
+        # Dose 2: enter queue; Dose 3 departures leave oldest dose 2 cohorts
+        dose2_queue[t] <- j2[t]
+        rem3 <- j3[t]
+        for (s in 1:t) 
+        {
+          if (rem3 <= 0) break
+          if (dose2_queue[s] > 0) {
+            take <- min(dose2_queue[s], rem3)
+            dose2_queue[s] <- dose2_queue[s] - take
+            rem3 <- rem3 - take
+          }
+        }
+        waned_only2 <- sum(dose2_queue[1:t] * decay_weights)
+        W2[t] <- waned_only2 + W3[t]
+        
+        # Dose 1: enter queue; Dose 2 departures leave oldest dose 1 cohorts
+        dose1_queue[t] <- j1[t]
+        rem2 <- j2[t]
+        for (s in 1:t) 
+        {
+          if (rem2 <= 0) break
+          if (dose1_queue[s] > 0) {
+            take <- min(dose1_queue[s], rem2)
+            dose1_queue[s] <- dose1_queue[s] - take
+            rem2 <- rem2 - take
+          }
+        }
+        waned_only1 <- sum(dose1_queue[1:t] * decay_weights)
+        W1[t] <- waned_only1 + W2[t]
+      }
+      
+      # Overwrite cumulative proportions with waned effective coverage
+      data_model$First_Prop[idx]  <- W1
+      data_model$Second_Prop[idx] <- W2
+      data_model$Third_Prop[idx]  <- W3
+    }
+  }
   
   ## Now at this point, the data_model is dim timepoints * LTLAs;
   ## but the data_model_age is dim timepoints * LTLAs * age_geroups!
@@ -555,7 +633,7 @@ get_data <- function(data_vax, data_rt, data_var,
 data_stan <- get_data(data_vax = data_vax, data_rt = data_rt, data_var = data_var,
                       covar_var = covar_var, covar_vax = covar_vax,
                       Date_Start = Date_Start, Date_End = Date_End,
-                      Vax_Lag_Days = Vax_Lag_Days,
+                      Vax_Lag_Days = Vax_Lag_Days, Waning_HalfLife = Waning_HalfLife_Weeks,
                       DoVariants = 1, DoVaxVariants = 0, DoAge = 0, DoVaxAge = 0)
 
 

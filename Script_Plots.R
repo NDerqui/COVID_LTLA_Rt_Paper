@@ -499,7 +499,7 @@ rm(p, cut)
 
 #### Supplementary 3 ####
 
-# Comparing vaccine effect
+# Comparing vaccine effect (ACROSS VARIANT-AGE ALTERNATIVES)
 
 all_ve <- data.frame()
 
@@ -547,7 +547,7 @@ rm(add, variation, data)
 
 ## Plot VE
 
-png(paste0("Results/FigureS3.png"),
+png(paste0("Results/FigureS4.png"),
     width = 8, height = 5, units = 'in', res = 1200)
 
 ggplot(data = all_ve,mapping = aes(x = dose, y = ve, color = variant, shape = age_group)) +
@@ -559,11 +559,71 @@ ggplot(data = all_ve,mapping = aes(x = dose, y = ve, color = variant, shape = ag
   scale_shape_manual(values = c(0, 2, 5, 19), name = "Age Group") +
   labs(y = "Vaccine Effectiveness", color = "Model") +
   theme_bw() +
-  theme(title = element_text(face = "bold"),
+  theme(legend.title = element_text(face = "bold"),
         axis.title.x = element_blank(),
         legend.position = "bottom") +
   facet_wrap(. ~ model) +
   guides(color = guide_legend(nrow = 2), shape = guide_legend(nrow = 2))
+
+dev.off()
+
+
+#### Supplementary 4 ####
+
+# Comparing vaccine effect (ACROSS LAG-WANING ALTERNATIVES)
+
+all_ve <- data.frame()
+
+## Loop to retrieve all
+
+names <- c("LOCAL_Main_Model", "with_lag0_Waning_1_Variant",
+           "with_lag7_1_Variant", "with_lag7_Waning_1_Variant",
+           "with_lag14_1_Variant", "with_lag14_Waning_1_Variant")
+lags <- c("Lag 0 days", "Lag 0 days",
+          "Lag 7 days", "Lag 7 days",
+          "Lag 14 days", "Lag 14 days")
+waning <- c("No waning", "Waning", "No waning", "Waning", "No waning", "Waning")
+
+for (variation in 1:length(names)) {
+  
+  data <- readRDS(paste0("Results/Final_for_paper_", names[variation], ".Rds"))
+  
+  # Extract VE
+  
+  add <- data[[2]]
+  add$lag <- paste0(lags[variation])
+  add$wane <- paste0(waning[variation])
+  
+  # All based on main model (only three pars for VE)
+  
+  add$dose <- c("Dose 1", "Dose 2", "Dose 3")
+  
+  colnames(add) <- c("ve", "low", "upp", "lag", "wane", "dose")
+  all_ve <- rbind(all_ve, add)
+}
+rm(add, variation, data)
+
+all_ve$lag <- factor(all_ve$lag, levels = c("Lag 0 days", "Lag 7 days", "Lag 14 days"))
+
+## Plot VE
+
+png(paste0("Results/FigureS5.png"),
+    width = 6, height = 7, units = 'in', res = 1200)
+
+ggplot(data = all_ve,mapping = aes(x = dose, y = ve, color = dose)) +
+  geom_point(shape = 15, size = 3) +
+  geom_errorbar(mapping = aes(ymin = low, ymax = upp), width = 0.1) +
+  scale_color_manual(values = c(carto_pal(name = "Safe")[4],
+                                carto_pal(name = "Safe")[8],
+                                carto_pal(name = "Safe")[3]),
+                     labels = c("Dose 1", "Dose 2", "Dose 3")) +
+  scale_y_continuous(labels = scales::percent, limits = c(0,1)) +
+  labs(y = "Vaccine Effectiveness") +
+  theme_bw() +
+  theme(axis.title.x = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank()) +
+  facet_grid(lag ~ wane)
 
 dev.off()
 

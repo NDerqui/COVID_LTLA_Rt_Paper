@@ -573,6 +573,7 @@ dev.off()
 # Comparing vaccine effect (ACROSS LAG-WANING ALTERNATIVES)
 
 all_ve <- data.frame()
+all_va <- data.frame()
 
 ## Loop to retrieve all
 
@@ -600,6 +601,20 @@ for (variation in 1:length(names)) {
   
   colnames(add) <- c("ve", "low", "upp", "lag", "wane", "dose")
   all_ve <- rbind(all_ve, add)
+  
+  # Extract VA
+  
+  add <- data[[3]]
+  add <- rbind(c(1, 1, 1), add)
+  
+  # All based on main model (only three pars for VE)
+  
+  add <- cbind(variant = c(" Pre-Alpha", "Alpha", "Delta"),
+               add)
+  add$lag <- paste0(lags[variation])
+  add$wane <- paste0(waning[variation])
+  all_va <- rbind(all_va, add)
+  
 }
 rm(add, variation, data)
 
@@ -607,10 +622,7 @@ all_ve$lag <- factor(all_ve$lag, levels = c("Lag 0 days", "Lag 7 days", "Lag 14 
 
 ## Plot VE
 
-png(paste0("Results/FigureS5.png"),
-    width = 6, height = 7, units = 'in', res = 1200)
-
-ggplot(data = all_ve,mapping = aes(x = dose, y = ve, color = dose)) +
+fig_s4a <- ggplot(data = all_ve,mapping = aes(x = dose, y = ve, color = dose)) +
   geom_point(shape = 15, size = 3) +
   geom_errorbar(mapping = aes(ymin = low, ymax = upp), width = 0.1) +
   scale_color_manual(values = c(carto_pal(name = "Safe")[4],
@@ -624,6 +636,33 @@ ggplot(data = all_ve,mapping = aes(x = dose, y = ve, color = dose)) +
         legend.position = "bottom",
         legend.title = element_blank()) +
   facet_grid(lag ~ wane)
+
+## Plot VA
+
+fig_s4b <- ggplot(data = all_va,
+       mapping = aes(x = variant, y = VarAdvantage, color = variant)) +
+  geom_point(shape = 15, size = 3) +
+  geom_errorbar(mapping = aes(ymin = X2.5., ymax = X97.5.), width = 0.1) +
+  scale_x_discrete(breaks = c(" Pre-Alpha", "Alpha", "Delta"),
+                   labels = c("Wild-type", "Alpha", "Delta")) +
+  scale_color_manual(breaks = c(" Pre-Alpha", "Alpha", "Delta"),
+                     values = c(carto_pal(name = "Safe")[4],
+                                carto_pal(name = "Safe")[8],
+                                carto_pal(name = "Safe")[3]),
+                     labels = c("Wild-type", "Alpha", "Delta")) +
+  theme_bw() +
+  labs(y = "Variant Advantage") +
+  theme(axis.title.x = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank()) +
+  facet_grid(lag ~ wane)
+
+## All
+
+png(paste0("Results/FigureS5.png"),
+    width = 10, height = 5, units = 'in', res = 1200)
+
+ggarrange(fig_s4a, fig_s4b, ncol = 2, labels = c("A", "B"))
 
 dev.off()
 

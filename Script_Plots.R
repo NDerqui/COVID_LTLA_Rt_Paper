@@ -619,6 +619,7 @@ for (variation in 1:length(names)) {
 rm(add, variation, data)
 
 all_ve$lag <- factor(all_ve$lag, levels = c("Lag 0 days", "Lag 7 days", "Lag 14 days"))
+all_va$lag <- factor(all_va$lag, levels = c("Lag 0 days", "Lag 7 days", "Lag 14 days"))
 
 ## Plot VE
 

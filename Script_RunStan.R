@@ -770,14 +770,19 @@ saveRDS(list_result, paste0("Results/Final_for_paper_LOCAL_", model_name, ".Rds"
 
 #### Checks ####
 
-# Tracepolots for the Stan estimates
+# Traceplots for the Stan estimates
 
 pars_list <- c("VaxEffect", "VarAdvantage", "LogPredictions", "RegionalTrends", "NationalTrend", "RegionalScale")
-notes_list <- c(".1", ".2", ".3", ".4", ".5", ".6")
-width_list <- c(10, 10, 20, 20, 20, 20)
-height_list <- c(6, 6, 12, 12, 12, 12)
+notes_list <- c("a", "b", "c", "d", "e", "f")
 
 for (var in 1:length(pars_list)) {
+  
+  if (var %in% 1:2) {
+    pars <- pars_list[var]
+  } else {
+    random_selection <- sample(x = 1:length(Rt_data), size = 4)
+    pars <- paste0(pars_list[var], "[", random_selection, "]")
+  }
   
   p <- traceplot(fit, pars = pars_list[var], inc_warmup = TRUE) +
     rcartocolor::scale_color_carto_d("Safe") +
@@ -787,11 +792,11 @@ for (var in 1:length(pars_list)) {
     ggplot2::guides(colour = ggplot2::guide_legend(nrow = 1))
   
   png(paste0("Results/FigureS3", notes_list[var], ".png"),
-      width = width_list[var], height = height_list[var],
+      width = 10, height = 6,
       units = "in", res = 1200)
   print(p)
   dev.off()
 }
 
-rm(p, var,
+rm(p, var, random_selection,
    pars_list, notes_list, width_list, height_list)

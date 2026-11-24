@@ -264,18 +264,18 @@ get_data <- function(data_vax, data_rt, data_var,
   
   data_merge <- data_merge %>%
     mutate(total = (n_all_wildtype_variant + n_all_alpha_variant + n_all_delta_variant)) %>%
-    mutate(Var_PreAlpha = case_when(total == 0 ~ 0,
+    mutate(Var_PreAlpha = case_when(total == 0 ~ 1,
                                     total != 0 ~ n_all_wildtype_variant/total)) %>%
-    mutate(Var_Alpha = case_when(total == 0 ~ 1,
+    mutate(Var_Alpha = case_when(total == 0 ~ 0,
                                  total != 0 ~ n_all_alpha_variant/total)) %>%
     mutate(Var_Delta = case_when(total == 0 ~ 0,
                                  total != 0 ~ n_all_delta_variant/total))
   
   data_merge_age <- data_merge_age %>%
     mutate(total = (n_all_wildtype_variant + n_all_alpha_variant + n_all_delta_variant)) %>%
-    mutate(Var_PreAlpha = case_when(total == 0 ~ 0,
+    mutate(Var_PreAlpha = case_when(total == 0 ~ 1,
                                     total != 0 ~ n_all_wildtype_variant/total)) %>%
-    mutate(Var_Alpha = case_when(total == 0 ~ 1,
+    mutate(Var_Alpha = case_when(total == 0 ~ 0,
                                  total != 0 ~ n_all_alpha_variant/total)) %>%
     mutate(Var_Delta = case_when(total == 0 ~ 0,
                                  total != 0 ~ n_all_delta_variant/total))

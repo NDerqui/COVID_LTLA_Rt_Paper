@@ -49,7 +49,7 @@ date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[14]]*7
 
 ## Main Model: with Variants, but not Variant's VE
 
-list_result <- readRDS("Results/Final_for_paper_LOCAL_Main_Model.Rds")
+list_result <- readRDS("Results/Final_for_paper_1_Variant.Rds")
 
 
 #### Substract parameters ####
@@ -502,15 +502,16 @@ rm(p, cut)
 # Comparing vaccine effect (ACROSS VARIANT-AGE ALTERNATIVES)
 
 all_ve <- data.frame()
+all_va <- data.frame()
 
 ## Loop to retrieve all
 
-names <- c("Main_Model", "VarVE", "Age", "VarAgeVE")
+names <- c("1_Variant", "2_VariantVE", "3_Variant_Age", "4_VariantVE_AgeVE")
 models <- c("  Main model", " Variant-specific-VE", "Age-model", "Age-variant-specific-VE")
 
 for (variation in 1:length(names)) {
   
-  data <- readRDS(paste0("Results/Final_for_paper_LOCAL_", names[variation], ".Rds"))
+  data <- readRDS(paste0("Results/Final_for_paper_", names[variation], ".Rds"))
   
   # Extract VE
   
@@ -542,21 +543,34 @@ for (variation in 1:length(names)) {
   
   colnames(add) <- c("ve", "low", "upp", "model", "dose", "variant", "age_group")
   all_ve <- rbind(all_ve, add)
+  
+  # Extract VA
+  
+  add <- data[[3]]
+  add <- rbind(c(1, 1, 1), add)
+  
+  # All based on main model (only three pars for VE)
+  
+  add <- cbind(variant = c(" Pre-Alpha", "Alpha", "Delta"),
+               add)
+  add$model <- paste0(models[variation])
+  all_va <- rbind(all_va, add)
 }
 rm(add, variation, data)
 
 ## Plot VE
 
-png(paste0("Results/FigureS4.png"),
-    width = 8, height = 5, units = 'in', res = 1200)
-
-ggplot(data = all_ve,mapping = aes(x = dose, y = ve, color = variant, shape = age_group)) +
+fig_s3a <- ggplot(data = all_ve,mapping = aes(x = dose, y = ve, color = variant, shape = age_group)) +
   geom_point(position = position_dodge(0.5)) +
   geom_errorbar(mapping = aes(ymin = low, ymax = upp),
                 position = position_dodge(0.5), width = 0.2) +
   scale_y_continuous(labels = scales::percent, limits = c(0,1)) +
-  scale_color_manual(values = carto_pal(name = "Safe")[c(1:2, 4, 12)], name = "Variant") +
-  scale_shape_manual(values = c(0, 2, 5, 19), name = "Age Group") +
+  scale_color_manual(breaks = c(" Wild-type", "Alpha", "Delta", "Non-variant specific"),
+                     values = c(carto_pal(name = "Safe")[4],
+                                carto_pal(name = "Safe")[8],
+                                carto_pal(name = "Safe")[3],
+                                carto_pal(name = "Safe")[12]))  +
+  scale_shape_manual(values = c(0, 2, 5, 15), name = "Age Group") +
   labs(y = "Vaccine Effectiveness", color = "Model") +
   theme_bw() +
   theme(legend.title = element_text(face = "bold"),
@@ -564,6 +578,33 @@ ggplot(data = all_ve,mapping = aes(x = dose, y = ve, color = variant, shape = ag
         legend.position = "bottom") +
   facet_wrap(. ~ model) +
   guides(color = guide_legend(nrow = 2), shape = guide_legend(nrow = 2))
+
+## Plot VA
+
+fig_s3b <- ggplot(data = all_va,
+                  mapping = aes(x = variant, y = VarAdvantage, color = variant)) +
+  geom_point(shape = 15, size = 3) +
+  geom_errorbar(mapping = aes(ymin = X2.5., ymax = X97.5.), width = 0.1) +
+  scale_x_discrete(breaks = c(" Pre-Alpha", "Alpha", "Delta"),
+                   labels = c("Wild-type", "Alpha", "Delta")) +
+  scale_color_manual(breaks = c(" Pre-Alpha", "Alpha", "Delta"),
+                     values = c(carto_pal(name = "Safe")[4],
+                                carto_pal(name = "Safe")[8],
+                                carto_pal(name = "Safe")[3]),
+                     labels = c("Wild-type", "Alpha", "Delta")) +
+  theme_bw() +
+  labs(y = "Variant Advantage") +
+  theme(axis.title.x = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank()) +
+  facet_wrap(. ~ model) +
+
+##
+
+png(paste0("Results/FigureS4.png"),
+    width = 8, height = 10, units = 'in', res = 1200)
+
+ggarrange(fig_s3a, fig_s3b, nrow = 2, labels = c("A", "B"))
 
 dev.off()
 
@@ -577,9 +618,9 @@ all_va <- data.frame()
 
 ## Loop to retrieve all
 
-names <- c("LOCAL_Main_Model", "with_lag0_Waning_1_Variant",
-           "with_lag7_1_Variant", "with_lag7_Waning_1_Variant",
-           "with_lag14_1_Variant", "with_lag14_Waning_1_Variant")
+names <- c("Sensitivity_Run_Lag0", "Sensitivity_Run_Lag0_Waning",
+           "Sensitivity_Run_Lag7", "Sensitivity_Run_Lag7_Waning",
+           "Sensitivity_Run_Lag14", "Sensitivity_Run_Lag14_Waning")
 lags <- c("Lag 0 days", "Lag 0 days",
           "Lag 7 days", "Lag 7 days",
           "Lag 14 days", "Lag 14 days")
@@ -587,7 +628,7 @@ waning <- c("No waning", "Waning", "No waning", "Waning", "No waning", "Waning")
 
 for (variation in 1:length(names)) {
   
-  data <- readRDS(paste0("Results/Final_for_paper_", names[variation], ".Rds"))
+  data <- readRDS(paste0("Results/", names[variation], ".Rds"))
   
   # Extract VE
   
@@ -676,12 +717,12 @@ all_loo <- data.frame()
 
 ## Loop to retrieve all
 
-names <- c("Main_Model", "VarVE", "Age", "VarAgeVE")
+names <- c("1_Variant", "2_VariantVE", "3_Variant_Age", "4_VariantVE_AgeVE")
 models <- c("  Main model", " Variant-specific-VE", "Age-model", "Age-variant-specific-VE")
 
 for (variation in 1:length(names)) {
   
-  data <- readRDS(paste0("Results/Final_for_paper_LOCAL_", names[variation], ".Rds"))
+  data <- readRDS(paste0("Results/Final_for_paper_", names[variation], ".Rds"))
   
   # Extract and add
   
@@ -693,3 +734,36 @@ for (variation in 1:length(names)) {
 rm(add, variation, data)
 
 write.csv(all_loo, "Results/TableS1.csv", row.names = FALSE)
+
+
+#### Table S2 ####
+
+# Comparing loo-cv
+
+all_loo <- data.frame()
+
+## Loop to retrieve all
+
+names <- c("Sensitivity_Run_Lag0", "Sensitivity_Run_Lag0_Waning",
+           "Sensitivity_Run_Lag7", "Sensitivity_Run_Lag7_Waning",
+           "Sensitivity_Run_Lag14", "Sensitivity_Run_Lag14_Waning")
+lags <- c("Lag 0 days", "Lag 0 days",
+          "Lag 7 days", "Lag 7 days",
+          "Lag 14 days", "Lag 14 days")
+waning <- c("No waning", "Waning", "No waning", "Waning", "No waning", "Waning")
+models <- paste0(lags, " - ", waning)
+
+for (variation in 1:length(names)) {
+  
+  data <- readRDS(paste0("Results/", names[variation], ".Rds"))
+  
+  # Extract and add
+  
+  add <- as.data.frame(data[[1]][5:10])
+  add$model <- paste0(models[variation])
+  
+  all_loo <- rbind(all_loo, add)
+}
+rm(add, variation, data)
+
+write.csv(all_loo, "Results/TableS2.csv", row.names = FALSE)

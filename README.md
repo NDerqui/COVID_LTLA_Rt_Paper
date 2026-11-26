@@ -2,6 +2,8 @@
 
 This repository contains the code for data cleaning, analysis and figures generation used for the manuscript "Modelling the impact of vaccination on SARS-CoV-2 transmission in England", currently under review but whose early version is available online as a [preprint](https://www.medrxiv.org/content/10.1101/2024.09.06.24313210v1).
 
+Note some dummy data has been added to the repository to allow for testing of the code, but the full dataset is not included due to data sharing restrictions. The full dataset can be requested from the UK Health Security Agency (UKHSA) and the COVID-19 Genomics UK (COG-UK) Consortium. Importantly, the dummy data *will not reproduce the results of the manuscript*, and is only provided to allow for testing of the code.
+
 ## Abstract
 
 **Background** Efficacy and effectiveness of vaccines against SARS-CoV-2 infection, severe disease and death have been widely assessed. However, the impact of vaccination against SARS-CoV-2 transmission is far less well-characterized, and has major implications for public health, because it informs the indirect effects of vaccination in addition to its direct effects. Analysing the effects of SARS-CoV-2 vaccination on transmission is challenging, because they must be considered in tandem with the time-varying reproduction number (Rt), while also accounting for regional variability, for example due to the presence of more transmissible variants.

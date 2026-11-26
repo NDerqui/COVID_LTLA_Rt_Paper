@@ -26,9 +26,12 @@ options(mc.cores = parallel::detectCores())
 
 # Data
 
-data_vax <- read.csv("Data/rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv")
-data_rt <- read.csv("Data/UK_hotspot_Rt_estimates.csv")
-data_var <- read.csv("Data/vam_by_ltla.csv")
+# data_vax <- read.csv("Data/rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv")
+data_vax <- read.csv("DummyData/synthetic_vacc_coverage_ltla.csv")
+# data_rt <- read.csv("Data/UK_hotspot_Rt_estimates.csv")
+data_rt <- read.csv("DummyData/synthetic_UK_Rt_estimates.csv")
+# data_var <- read.csv("Data/vam_by_ltla.csv")
+data_var <- read.csv("DummyData/synthetic_vam_by_ltla.csv")
 
 
 
